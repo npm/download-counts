@@ -18,7 +18,7 @@ server.pack.require('./node_modules/hapi-mysql', Config.db, function(err) {
 // Add the routes
 server.route({
   method: 'GET',
-  path: '/downloads/{period}/{packageName?}',
+  path: '/downloads/{period}/{package?}',
   handler: downloads.get
 });
 

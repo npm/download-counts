@@ -16,6 +16,7 @@
     "moment": "~2.5.1",
     "async": "~0.2.10",
     "manta-client": "~1.0.5",
-    "dashdash": "~1.4.0"
+    "dashdash": "~1.4.0",
+    "uuid": "~1.4.1"
   }
 }

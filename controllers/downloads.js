@@ -1,20 +1,44 @@
+var mysql = require('mysql')
+
 exports.get = function (request, reply) {
 
   console.log(request.server.plugins)
 
   request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
 
+    console.log(request.params)
+
     // Use the connection
-    connection.query( 'SELECT * FROM bob', function(err, rows) {
+    connection.query(
+      'SELECT package, downloads FROM downloads WHERE package = ? AND day = ?',
+      [
+        request.params.package,
+        request.params.period
+      ],
+      function(err, rows) {
 
-      console.log(rows)
+        if(err) {
+          throw new Error(err)
+        }
 
-      // And done with the connection.
-      connection.release();
+        // And done with the connection.
+        connection.release();
 
-      reply('hello world');
+        if (rows.length == 0) {
+          reply({
+            error: "no stats for this package for this period"
+          })
+        } else {
+          var result = rows[0]
 
-    });
+          reply({
+            package: result.package,
+            downloads: result.downloads
+          });
+        }
+
+      }
+    );
   });
 
 }
