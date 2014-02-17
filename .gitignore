@@ -1,0 +1,5 @@
+.idea
+Vagrantfile
+.vagrant
+node_modules
+config.js

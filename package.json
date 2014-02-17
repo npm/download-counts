@@ -1,0 +1,21 @@
+{
+  "name": "downloads",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mysql": "~2.0.1",
+    "hapi": "~2.3.0",
+    "manta": "~1.2.6",
+    "assert": "~1.1.1",
+    "moment": "~2.5.1",
+    "async": "~0.2.10",
+    "manta-client": "~1.0.5",
+    "dashdash": "~1.4.0"
+  }
+}
