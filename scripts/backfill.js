@@ -99,7 +99,7 @@ var loadDay = function(day,cb) {
         var package = lineParts[0].toLowerCase()
         var downloads = lineParts[1]
         if (!package || !downloads) {
-          console.log("Ignored line: " + line)
+          // ignore blank lines or null downloads
           return;
         }
         if (dedupe[package]) dedupe[package] += downloads
@@ -124,10 +124,12 @@ var loadDay = function(day,cb) {
 // find all the days we have to load
 var loadAllDays = function(days) {
   // filter by start day
-  var startDay = moment(Config.backfill.startDate)
+  var startDay = moment(Config.backfill.startDate).format('YYYY-MM-DD')
+
   var startDayIndex = days.indexOf(startDay)
   if ( startDayIndex > -1 ) {
     days = days.slice(startDayIndex)
+    console.log("Day was in range")
   }
 
   if (Config.backfill.limit) {

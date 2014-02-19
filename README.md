@@ -47,3 +47,7 @@ Gets the downloads per day for a given period, for all packages or a specific pa
 * /downloads/range/2014-02-07:2014-02-14
 * /downloads/range/last-month/jquery
 * /downloads/range/2014-01-03:2014-02-03/jquery
+
+### Parameters
+
+Same as for /downloads/point.

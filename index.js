@@ -1,4 +1,5 @@
 var Hapi = require('hapi');
+var Joi = require('joi')
 
 // load config
 var Config = require('./config')
@@ -15,16 +16,29 @@ server.pack.require('./node_modules/hapi-mysql', Config.db, function(err) {
   }
 });
 
+// Validation for parameters
+var downloadsSchema = {
+  // valid periods: 2014-02-01, 2014-01-02:2014-01-04, last-day, last-week
+  period: Joi.string().regex(/(\d{4}-\d{2}-\d{2}(:\d{4}-\d{2}-\d{2})?|[\w-]+)/).required(),
+  // valid package names: jquery, jquery-express, socket.io, socket.io-express
+  package: Joi.string().regex(/^[a-zA-Z0-9]([^\/\(\)&\?#\|<>@:%\s\\\*'"!~`])*/)
+};
+
 // Add the routes
 server.route({
   method: 'GET',
   path: '/downloads/point/{period}/{package?}',
-  handler: downloads.point
+  config: {
+    handler: downloads.point,
+    validate: {
+      path: downloadsSchema
+    }
+  }
 });
 server.route({
   method: 'GET',
-  path: '/downloads/range/from/{start}/to/{end}/{package?}',
-  handler: downloads.point
+  path: '/downloads/range/{period}/{package?}',
+  handler: downloads.range
 });
 
 // Start the server

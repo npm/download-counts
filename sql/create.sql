@@ -5,5 +5,6 @@ CREATE TABLE `downloads` (
   `day` datetime NOT NULL,
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `package-day` (`package`(255),`day`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+  UNIQUE KEY `package-day` (`package`(255),`day`),
+  KEY `day` (`day`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
