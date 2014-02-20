@@ -1,4 +1,7 @@
 var mysql = require('mysql')
+var moment = require('moment')
+
+//var NPM_EPOCH = '2009-09-29' totals are in their own table
 
 /**
  * Valid periods: 2014-02-01, 2014-01-02:2014-01-04, last-day, last-week
@@ -116,7 +119,7 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
 
     // we need the current max day
     connection.query(
-      'SELECT max(day) FROM downloads',
+      'SELECT max(day) as last_day FROM downloads',
       function(er,rows) {
 
         if(er) {
@@ -124,14 +127,29 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
             error: "query failed (0003)"
           })
         } else {
-          if (rows.length == 0) {
+          if (rows.length == 0 || !rows[0]['last_day']) {
             reply({
               error: "no daily data available (0004)"
             })
           } else {
-            var result = rows[0]
-            console.log("day result is " + result)
-            //cb(request,reply,conditions,period)
+            var result = rows[0]['last_day']
+            var lastMoment = moment(result)
+            var lastDay = lastMoment.format('YYYY-MM-DD')
+
+            switch(period.range) {
+              case 'last-day':
+                period.start = lastDay
+                break;
+              case 'last-week':
+                period.start = lastMoment.subtract('days',7).format('YYYY-MM-DD')
+                break;
+              case 'last-month':
+                period.start = lastMoment.subtract('days',30).format('YYYY-MM-DD')
+                break;
+            }
+            period.range = null
+            period.end = lastDay
+            cb(request,reply,conditions,period)
           }
 
         }
