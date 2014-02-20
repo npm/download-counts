@@ -1,3 +1,4 @@
+-- create downloads table
 CREATE TABLE `downloads` (
   `id` binary(16) NOT NULL,
   `package` varchar(2000) NOT NULL,
@@ -8,3 +9,11 @@ CREATE TABLE `downloads` (
   UNIQUE KEY `package-day` (`package`(255),`day`),
   KEY `day` (`day`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- this will just create an empty totals table
+create table download_totals as
+  select
+    package,
+    sum(downloads) as total_downloads
+  from downloads
+  group by package;

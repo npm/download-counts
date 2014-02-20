@@ -146,10 +146,60 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
 
 }
 
+var getAllTimeData = function(request,reply,conditions) {
+
+  if (conditions.all) {
+    reply({
+      error: "all-time data for all packages is unavailable; specify a package name"
+    })
+    return;
+  }
+
+  var sql = "SELECT package, total_downloads FROM download_totals WHERE package = ?"
+  var bindValues = [conditions.package]
+
+  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+
+    // Use the connection
+    connection.query(
+      sql,
+      bindValues,
+      function(er, rows) {
+
+        if(er) {
+          reply({
+            error: "query failed (0005)"
+          })
+        } else {
+          if (rows.length == 0) {
+            reply({
+              error: "no totals data for this package (0006)"
+            })
+          } else {
+            var result = rows[0]
+            var output = {
+              package: result.package,
+              downloads: result['total_downloads']
+              // TODO: could return start and end days here?
+              //start: period.start,
+              //end: period.end
+            }
+            reply(output)
+          }
+        }
+
+        // And done with the connection.
+        connection.release()
+      }
+    )
+  })
+
+
+}
+
 exports.point = function (request, reply) {
 
-  console.log("in downloads.point")
-
+  console.log("downloads.point:")
   console.log(request.params)
 
   var conditions = {}
@@ -169,7 +219,7 @@ exports.point = function (request, reply) {
     return
   }
 
-  if (period.range == 'all') {
+  if (period.range == 'all-time') {
     getAllTimeData(request,reply,conditions)
   } else if (period.range) {
     getDaysFromRange(request,reply,conditions,period,getSumOfDays)
