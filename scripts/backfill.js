@@ -103,7 +103,7 @@ var loadDay = function(day,cb) {
       lines.forEach(function(line,index) {
         var lineParts = line.trim().split(' ')
         var package = lineParts[0].toLowerCase()
-        var downloads = lineParts[1]
+        var downloads = parseInt(lineParts[1])
         if (!package || !downloads) {
           // ignore blank lines or null downloads
           return;

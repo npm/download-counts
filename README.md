@@ -21,6 +21,10 @@ Gets the total downloads for a given period, for all packages or a specific pack
 
 Acceptable values are:
 
+* all-time
+
+  Gets total downloads.
+
 * last-day
   
   Gets downloads for the last available day. In practice, this will usually be "yesterday" (in GMT) but if stats for that day have not yet landed, it will be the day before.

@@ -18,10 +18,10 @@ server.pack.require('./node_modules/hapi-mysql', Config.db, function(err) {
 
 // Validation for parameters
 var downloadsSchema = {
-  // valid periods: 2014-02-01, 2014-01-02:2014-01-04, last-day, last-week
+  // valid periods: 2014-02-01, 2014-01-02:2014-01-04, all-time, last-day, last-week
   period: Joi.string().regex(/(\d{4}-\d{2}-\d{2}(:\d{4}-\d{2}-\d{2})?|[\w-]+)/).required(),
   // valid package names: jquery, jquery-express, socket.io, socket.io-express
-  package: Joi.string().regex(/^[a-zA-Z0-9]([^\/\(\)&\?#\|<>@:%\s\\\*'"!~`])*/)
+  package: Joi.string().regex(/(^[a-zA-Z0-9]([^\/\(\)&\?#\|<>@:%\s\\\*'"!~`])*)*/).allow('')
 };
 
 // Add the routes
