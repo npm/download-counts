@@ -4,7 +4,7 @@ var manta = require('manta-client')
 var assert = require('assert')
 var moment = require('moment')
 var async = require('async')
-var uuid = require('uuid')
+var CompactUuid = require('compact-uuid')
 
 var client = manta();
 assert.ok(client)
@@ -12,7 +12,7 @@ assert.ok(client)
 console.log('manta ready: %s', client.toString());
 
 var dbConfig = Config.db
-dbConfig['connectionLimit'] = 1 // to avoid deadlocks on huge inserts
+dbConfig['connectionLimit'] = 1 // to avoid deadlocks on inserts
 var pool = mysql.createPool(dbConfig);
 
 // insert a day's downloads as a single giant insert
@@ -24,6 +24,9 @@ var insertBatch = function(day,counts,cb) {
 
     console.log("preparing batch for " + day + ", " + counts.length + " packages")
 
+    // Danger! ALWAYS REPLACES the existing data. This is slow!
+    // If you're re-running for a date, it's because something went wrong
+    // REPLACE means you never have to delete the crappy old data.
     var sql = 'REPLACE INTO downloads (id,package,downloads,day,updated) VALUES '
     var values = []
 
@@ -36,8 +39,9 @@ var insertBatch = function(day,counts,cb) {
           console.log("Pad package ignored")
           cb()
         } else {
+          var compactId = CompactUuid.generate()
           var vals = [
-            mysql.escape(uuid.v1()),
+            mysql.escape(compactId),
             mysql.escape(package),
             mysql.escape(downloads),
             mysql.escape(day),
@@ -64,9 +68,11 @@ var insertBatch = function(day,counts,cb) {
         var tries = 0;
 
         try {
+          // try query
           runQuery()
         } catch (e) {
-          runQuery()
+          console.log("ERROR: " + e)
+          //console.log(sql)
         }
       }
     )
@@ -93,7 +99,7 @@ var loadDay = function(day,cb) {
 
       // package counts can appear multiple times in the same day
       // sum them up
-      var dedupe = {}
+      var dedupe = Object.create(null) // because {} has a key called "constructor" and there's a package called that
       lines.forEach(function(line,index) {
         var lineParts = line.trim().split(' ')
         var package = lineParts[0].toLowerCase()
@@ -112,7 +118,7 @@ var loadDay = function(day,cb) {
         counts.push({package:p, downloads: dedupe[p]})
       }
 
-      console.log(lines.length + " rows yielding " + counts.length + " unique packages")
+      console.log(day + ": " + lines.length + " rows yielding " + counts.length + " unique packages")
       //console.log(counts)
 
       insertBatch(day,counts,cb)

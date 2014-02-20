@@ -6,14 +6,29 @@ var mysql = require('mysql')
  * @returns {*}
  */
 var parsePeriod = function(periodString) {
-  var dates = periodString.split(':')
-  if (!dates[0]) {
-    return false;
-  }
-  var start = dates[0]
-  var end = null;
-  if (dates[1]) {
-    end = dates[1]
+  // date range or shorthand?
+  if (periodString.match(/\d{4}-\d{2}-\d{2}(:\d{4}-\d{2}-\d{2})?/)) {
+    // date range
+    var dates = periodString.split(':')
+    if (!dates[0]) {
+      return false;
+    }
+    var start = dates[0]
+    var end = null;
+    if (dates[1]) {
+      end = dates[1]
+    }
+  } else {
+    // shorthand. Which one?
+    var periodNames = [
+      'last-day',
+      'last-week',
+      'last-month'
+    ]
+    if (periodNames.indexOf(periodString) == -1) {
+      return false;
+    }
+
   }
   return {
     start: start,
@@ -31,6 +46,12 @@ exports.point = function (request, reply) {
     var bindValues = []
 
     var period = parsePeriod(request.params.period)
+    if (period == false) {
+      reply({
+        error: "Invalid period specified"
+      })
+      return;
+    }
 
     var packageName = request.params.package
     if(packageName) {
