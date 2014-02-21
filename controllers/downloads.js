@@ -122,7 +122,7 @@ var getSumOfDays = function(request,reply,conditions,period) {
  */
 var getRangeOfDays = function(request,reply,conditions,period) {
 
-  var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day >= ? and day <= ?'
+  var sql = 'SELECT day, downloads FROM downloads WHERE day >= ? and day <= ?'
   var bindValues = []
 
   bindValues.push(period.start)
@@ -131,7 +131,11 @@ var getRangeOfDays = function(request,reply,conditions,period) {
   if(conditions.package) {
     sql += ' AND package = ?'
     bindValues.push(conditions.package)
+  } else {
+    // if all packages, group by day
+    sql += ' GROUP BY day'
   }
+  sql += ' ORDER BY day'
 
   request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
 
@@ -148,17 +152,20 @@ var getRangeOfDays = function(request,reply,conditions,period) {
         } else {
           if (rows.length == 0) {
             reply({
-              error: "no stats for this package for this period (0002)"
+              error: "no stats for this package for this range (0008)"
             })
           } else {
-            var result = rows[0]
+            var dayCounts = rows.map(function(row) {
+              row.day = moment(row.day).format('YYYY-MM-DD')
+              return row
+            })
             var output = {
-              downloads: result.downloads,
+              downloads: dayCounts,
               start: period.start,
               end: period.end
             }
             if (!conditions.all) {
-              output.package = result.package
+              output.package = conditions.package
             }
             reply(output)
           }
