@@ -1,6 +1,7 @@
 var mysql = require('mysql')
 var moment = require('moment')
 
+var MAX_RANGE = 31 // no more than 1 month of data at a time
 //var NPM_EPOCH = '2009-09-29' totals are in their own table
 
 /**
@@ -28,6 +29,13 @@ var parsePeriod = function(periodString) {
     } else {
       period.end = dates[0]
     }
+
+    // is this range too big?
+    var dayDiff = moment(period.end).diff(moment(period.start),'days')
+    if ( dayDiff > MAX_RANGE ) {
+      period.outOfRange = true
+      return period;
+    }
   } else {
     // shorthand. Which one?
     var periodNames = [
@@ -53,6 +61,66 @@ var parsePeriod = function(periodString) {
  * @param period
  */
 var getSumOfDays = function(request,reply,conditions,period) {
+
+  var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day >= ? and day <= ?'
+  var bindValues = []
+
+  bindValues.push(period.start)
+  bindValues.push(period.end)
+
+  if(conditions.package) {
+    sql += ' AND package = ?'
+    bindValues.push(conditions.package)
+  }
+
+  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+
+    // Use the connection
+    connection.query(
+      sql,
+      bindValues,
+      function(er, rows) {
+
+        if(er) {
+          reply({
+            error: "query failed (0001)"
+          })
+        } else {
+          if (rows.length == 0) {
+            reply({
+              error: "no stats for this package for this period (0002)"
+            })
+          } else {
+            var result = rows[0]
+            var output = {
+              downloads: result.downloads,
+              start: period.start,
+              end: period.end
+            }
+            if (!conditions.all) {
+              output.package = result.package
+            }
+            reply(output)
+          }
+        }
+
+        // And done with the connection.
+        connection.release()
+      }
+    )
+  })
+
+}
+
+/**
+ * Got a specific start and end date, and want the daily count
+ * for each day in that range.
+ * @param request
+ * @param reply
+ * @param conditions
+ * @param period
+ */
+var getRangeOfDays = function(request,reply,conditions,period) {
 
   var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day >= ? and day <= ?'
   var bindValues = []
@@ -164,6 +232,8 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
 
 }
 
+
+
 var getAllTimeData = function(request,reply,conditions) {
 
   if (conditions.all) {
@@ -236,6 +306,12 @@ exports.point = function (request, reply) {
     })
     return
   }
+  if (period.outOfRange) {
+    reply({
+      error: "Date range requested is too large"
+    })
+    return
+  }
 
   if (period.range == 'all-time') {
     getAllTimeData(request,reply,conditions)
@@ -247,8 +323,39 @@ exports.point = function (request, reply) {
 
 }
 
+/**
+ * Same rules, but results grouped by day for nice graphs.
+ * @param request
+ * @param reply
+ */
 exports.range = function(request, reply) {
-  reply({
-    error: "Not implemented"
-  })
+
+  var conditions = {}
+
+  var packageName = request.params.package
+  if(packageName) {
+    conditions.package = packageName
+  } else {
+    conditions.all = true
+  }
+
+  var period = parsePeriod(request.params.period,request.server.plugins['hapi-mysql'].pool)
+  if (period == false) {
+    reply({
+      error: "Invalid period specified"
+    })
+    return
+  }
+
+  if (period.range == 'all-time') {
+    reply({
+      error: "Cannot supply range date for all time (0007)"
+    })
+    return
+  } else if (period.range) {
+    getDaysFromRange(request,reply,conditions,period,getRangeOfDays)
+  } else {
+    getRangeOfDays(request,reply,conditions,period)
+  }
+
 }
