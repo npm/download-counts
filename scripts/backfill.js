@@ -11,7 +11,7 @@ assert.ok(client)
 
 console.log('manta ready: %s', client.toString());
 
-var dbConfig = Config.db
+var dbConfig = Config.writeDb
 dbConfig['connectionLimit'] = 1 // to avoid deadlocks on inserts
 var pool = mysql.createPool(dbConfig);
 
