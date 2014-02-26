@@ -18,6 +18,7 @@
     "manta-client": "~1.0.5",
     "dashdash": "~1.4.0",
     "uuid": "~1.4.1",
-    "joi": "~2.7.0"
+    "joi": "~2.7.0",
+    "compact-uuid": "0.0.0"
   }
 }
