@@ -138,7 +138,7 @@ var loadAllDays = function(days) {
     console.log("Start day was in range")
   } else {
     console.log("Start date was out of range")
-    exit(1)
+    process.exit(1)
   }
 
   // limit the number we do at once
