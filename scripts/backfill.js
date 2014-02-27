@@ -135,12 +135,15 @@ var loadAllDays = function(days) {
   var startDayIndex = days.indexOf(startDay)
   if ( startDayIndex > -1 ) {
     days = days.slice(startDayIndex)
-    console.log("Day was in range")
+    console.log("Start day was in range")
+  } else {
+    console.log("Start date was out of range")
+    exit(1)
   }
 
-  if (Config.backfill.limit) {
-    days = days.slice(0,Config.backfill.limit)
-  }
+  // limit the number we do at once
+  var limit = Config.backfill.limit || Config.backfill.defaultLimit
+  days = days.slice(0,limit)
 
   // fetch all the days, a few at a time
   async.eachLimit(days,Config.backfill.parallel,loadDay,function(err) {
