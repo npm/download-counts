@@ -8,8 +8,8 @@ var Config = require('./config')
 var downloads = require('./controllers/downloads')
 
 // Create the server
-var server = Hapi.createServer('0.0.0.0', 8000);
-server.pack.require('./node_modules/hapi-mysql', Config.db, function(err) {
+var server = Hapi.createServer('0.0.0.0', Config.server.port);
+server.pack.require('./node_modules/hapi-mysql', Config.readDb, function(err) {
   if (err) {
     console.error(err);
     throw err;
