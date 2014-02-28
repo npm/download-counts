@@ -133,7 +133,7 @@ var getRangeOfDays = function(request,reply,conditions,period) {
     bindValues.push(conditions.package)
   } else {
     // if all packages, group by day
-    sql += 'SELECT day, SUM(downloads) FROM downloads WHERE day >= ? and day <= ? GROUP BY day'
+    sql += 'SELECT day, SUM(downloads) as downloads FROM downloads WHERE day >= ? and day <= ? GROUP BY day'
   }
   sql += ' ORDER BY day'
 
