@@ -6,7 +6,7 @@ Gives you download counts. Eventually, maybe other stuff.
 
 Gets the total downloads for a given period, for all packages or a specific package.
 
-<code>GET /downloads/point/{period}[/{package}]</code>
+<code>GET https://api.npmjs.org/downloads/point/{period}[/{package}]</code>
 
 ### Examples
 
@@ -43,7 +43,7 @@ Acceptable values are:
 
 Gets the downloads per day for a given period, for all packages or a specific package.
 
-<code>GET /downloads/range/{period}[/{package}]</code>
+<code>GET https://api.npmjs.org/downloads/range/{period}[/{package}]</code>
 
 ### Examples
 
