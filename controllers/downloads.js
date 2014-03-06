@@ -216,10 +216,12 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
                 period.start = lastDay
                 break;
               case 'last-week':
-                period.start = lastMoment.subtract('days',7).format('YYYY-MM-DD')
+                // period is inclusive, so 6 days back for 7 days total
+                period.start = lastMoment.subtract('days',6).format('YYYY-MM-DD')
                 break;
               case 'last-month':
-                period.start = lastMoment.subtract('days',30).format('YYYY-MM-DD')
+                // period is inclusive, so 29 days back for 30 days total
+                period.start = lastMoment.subtract('days',29).format('YYYY-MM-DD')
                 break;
             }
             period.range = null
