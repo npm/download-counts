@@ -53,7 +53,6 @@ var insertBatch = function(day,counts,cb) {
       },
       function(err) {
         sql = sql + values.join(',')
-        //console.log(sql)
 
         var runQuery = function() {
           connection.query(sql, function(err, result) {
@@ -72,7 +71,6 @@ var insertBatch = function(day,counts,cb) {
           runQuery()
         } catch (e) {
           console.log("ERROR: " + e)
-          //console.log(sql)
         }
       }
     )
