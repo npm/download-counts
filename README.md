@@ -148,4 +148,22 @@ You can ssh into the VM to play with MySQL or whatever:
 
 <code>vagrant ssh</code>
 
-### 
+### Importing data from Manta (npm, Inc. only)
+
+New data is generated daily on npm's manta account. You can
+get it by running
+
+<code>node scripts/backfill.js YYYY-MM-DD N</code>
+
+YYYY-MM-DD is the date you want new data to start. If omitted,
+it will start importing from the first available data, which is
+a bad idea except when creating a new production host
+
+N is the number of days to import after that date. If omitted,
+it will import all available days. So to get everything after
+April 1, for instance, run
+
+<code>node scripts/backfill.js 2014-04-01</code>
+
+NB: you must have your MANTA_KEY_ID, MANTA_USER and MANTA_URL
+local variables defined (e.g. in .bash_profile) to connect to manta.
