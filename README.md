@@ -142,8 +142,10 @@ Run the server on port 3000:
 
 Test that it's working:
 
-<code>curl "http://192.168.33.10/downloads/point/2014-03-01"</code>
+<code>curl "http://localhost:3000/downloads/point/2014-03-01"</code>
 
 You can ssh into the VM to play with MySQL or whatever:
 
 <code>vagrant ssh</code>
+
+### 
