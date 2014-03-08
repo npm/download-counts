@@ -125,6 +125,10 @@ When you see "Done!" you are ready to rock.
 
 ### Running the web service
 
+Install dependencies:
+
+<code>npm install</code>
+
 You will need a config file:
 
 <code>cp test/config.dev.js config.js</code>
