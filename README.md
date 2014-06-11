@@ -106,3 +106,64 @@ Responses are very similar to the point API, except that downloads is now an arr
 
 As before, the package key will not be present if you have not specified a package.
 
+## Development
+
+The code requires node and a mysql database to talk to. We have a conveniently
+pre-configured VM available for download. First, install VirtualBox:
+
+https://www.virtualbox.org/wiki/Downloads
+
+And then install Vagrant:
+
+https://www.vagrantup.com/downloads.html
+
+Now just cd into the root of this repo and run
+
+<code>vagrant up</code>
+
+When you see "Done!" you are ready to rock.
+
+### Running the web service
+
+Install dependencies:
+
+<code>npm install</code>
+
+You will need a config file:
+
+<code>cp test/config.dev.js config.js</code>
+
+For development, you shouldn't need to change anything in here
+unless your VM didn't come up at the usual IP (192.168.33.10)
+
+Run the server on port 3000:
+
+<code>node index.js 3000</code>
+
+Test that it's working:
+
+<code>curl "http://localhost:3000/downloads/point/2014-03-01"</code>
+
+You can ssh into the VM to play with MySQL or whatever:
+
+<code>vagrant ssh</code>
+
+### Importing data from Manta (npm, Inc. only)
+
+New data is generated daily on npm's manta account. You can
+get it by running
+
+<code>node scripts/backfill.js YYYY-MM-DD N</code>
+
+YYYY-MM-DD is the date you want new data to start. If omitted,
+it will start importing from the first available data, which is
+a bad idea except when creating a new production host
+
+N is the number of days to import after that date. If omitted,
+it will import all available days. So to get everything after
+April 1, for instance, run
+
+<code>node scripts/backfill.js 2014-04-01</code>
+
+NB: you must have your MANTA_KEY_ID, MANTA_USER and MANTA_URL
+local variables defined (e.g. in .bash_profile) to connect to manta.
