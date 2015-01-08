@@ -12,7 +12,7 @@
   "dependencies": {
     "assert": "~1.1.1",
     "async": "~0.2.10",
-    "compact-uuid": "0.0.0",
+    "compact-uuid": "~0.0.1",
     "dashdash": "~1.4.0",
     "hapi": "~2.3.0",
     "hapi-mysql": "~0.0.42",
