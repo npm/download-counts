@@ -106,6 +106,13 @@ Responses are very similar to the point API, except that downloads is now an arr
 
 As before, the package key will not be present if you have not specified a package.
 
+## Bulk Queries
+
+To perform a bulk query, you can hit the range or point endpoints with a comma
+separated list of packages rather than a single package, e.g.,
+
+`/downloads/point/last-day/npm,express`
+
 ## Development
 
 The code requires node and a mysql database to talk to. We have a conveniently
