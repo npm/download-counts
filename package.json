@@ -15,7 +15,7 @@
     "compact-uuid": "~0.0.1",
     "dashdash": "~1.4.0",
     "hapi": "~2.3.0",
-    "hapi-mysql": "~0.0.42",
+    "hapi-mysql": "~0.0.41",
     "joi": "~2.7.0",
     "lodash": "^2.4.1",
     "manta": "~1.2.6",
