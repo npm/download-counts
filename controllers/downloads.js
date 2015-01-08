@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var mysql = require('mysql')
 var moment = require('moment')
 
@@ -34,7 +35,7 @@ var parsePeriod = function(periodString) {
     var dayDiff = moment(period.end).diff(moment(period.start),'days')
     if ( dayDiff > MAX_RANGE ) {
       period.outOfRange = true
-      return period;
+      return period
     }
   } else {
     // shorthand. Which one?
@@ -64,13 +65,19 @@ var getSumOfDays = function(request,reply,conditions,period) {
 
   var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day >= ? and day <= ?'
   var bindValues = []
+  var qmarks = []
+  var bulk = false
 
   bindValues.push(period.start)
   bindValues.push(period.end)
 
   if(conditions.package) {
-    sql += ' AND package = ?'
-    bindValues.push(conditions.package)
+    bulk = conditions.package.indexOf(',') > -1
+    conditions.package.split(',').forEach(function(package, i) {
+      qmarks.push('?')
+      bindValues.push(package)
+    })
+    sql += ' AND package in (' + qmarks.join(',') + ') GROUP BY package'
   }
 
   request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
@@ -80,7 +87,6 @@ var getSumOfDays = function(request,reply,conditions,period) {
       sql,
       bindValues,
       function(er, rows) {
-
         if(er) {
           reply({
             error: "query failed (0001)"
@@ -91,16 +97,21 @@ var getSumOfDays = function(request,reply,conditions,period) {
               error: "no stats for this package for this period (0002)"
             })
           } else {
-            var result = rows[0]
-            var output = {
-              downloads: result.downloads,
-              start: period.start,
-              end: period.end
-            }
-            if (!conditions.all) {
-              output.package = result.package
-            }
-            reply(output)
+            var outputs = []
+
+            rows.forEach(function(result) {
+              var output = {
+                downloads: result.downloads,
+                start: period.start,
+                end: period.end
+              }
+              if (!conditions.all) {
+                output.package = result.package
+              }
+              outputs.push(output)
+            })
+
+            reply(bulk ? outputs : outputs[0])
           }
         }
 
@@ -121,16 +132,22 @@ var getSumOfDays = function(request,reply,conditions,period) {
  * @param period
  */
 var getRangeOfDays = function(request,reply,conditions,period) {
-
   var sql = ''
   var bindValues = []
+  var qmarks = []
+  var bulk = false
 
   bindValues.push(period.start)
   bindValues.push(period.end)
 
   if(conditions.package) {
-    sql += 'SELECT day, downloads FROM downloads WHERE day >= ? and day <= ? AND package = ?'
-    bindValues.push(conditions.package)
+    bulk = conditions.package.indexOf(',') > -1
+    conditions.package.split(',').forEach(function(package, i) {
+      qmarks.push('?')
+      bindValues.push(package)
+    })
+
+    sql += 'SELECT package, day, downloads FROM downloads WHERE day >= ? and day <= ? AND package in (' + qmarks.join(',') + ') GROUP BY package,day'
   } else {
     // if all packages, group by day
     sql += 'SELECT day, SUM(downloads) as downloads FROM downloads WHERE day >= ? and day <= ? GROUP BY day'
@@ -144,7 +161,6 @@ var getRangeOfDays = function(request,reply,conditions,period) {
       sql,
       bindValues,
       function(er, rows) {
-
         if(er) {
           reply({
             error: "query failed (0001)"
@@ -154,10 +170,14 @@ var getRangeOfDays = function(request,reply,conditions,period) {
             reply({
               error: "no stats for this package for this range (0008)"
             })
+          } else if (bulk) {
+            handleBulkRange(rows, period, reply)
           } else {
             var dayCounts = rows.map(function(row) {
-              row.day = moment(row.day).format('YYYY-MM-DD')
-              return row
+              return {
+                day: moment(row.day).format('YYYY-MM-DD'),
+                downloads: row.downloads
+              }
             })
             var output = {
               downloads: dayCounts,
@@ -177,6 +197,31 @@ var getRangeOfDays = function(request,reply,conditions,period) {
     )
   })
 
+}
+
+var handleBulkRange = function(rows, period, reply) {
+  var grouped = _.groupBy(rows, 'package'),
+    outputs = []
+
+  Object.keys(grouped).forEach(function(key) {
+    var dayCounts = _.map(grouped[key], function(r) {
+      return {
+        day: moment(r.day).format('YYYY-MM-DD'),
+        downloads: r.downloads
+      }
+    });
+
+    var output = {
+      downloads: dayCounts,
+      start: period.start,
+      end: period.end,
+      package: key
+    }
+
+    outputs.push(output)
+  })
+  
+  reply(outputs);
 }
 
 /**
@@ -240,8 +285,6 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
   })
 
 }
-
-
 
 var getAllTimeData = function(request,reply,conditions) {
 

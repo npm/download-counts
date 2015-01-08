@@ -5,22 +5,28 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/lab -v -c --timeout 5000"
   },
   "author": "Laurie Voss <laurie@npmjs.com>",
   "license": "ISC",
   "dependencies": {
-    "mysql": "~2.0.1",
-    "hapi": "~2.3.0",
-    "manta": "~1.2.6",
     "assert": "~1.1.1",
-    "moment": "~2.5.1",
     "async": "~0.2.10",
-    "manta-client": "~1.0.5",
-    "dashdash": "~1.4.0",
-    "uuid": "~1.4.1",
-    "joi": "~2.7.0",
     "compact-uuid": "0.0.0",
-	  "hapi-mysql": "0.0.0"
+    "dashdash": "~1.4.0",
+    "hapi": "~2.3.0",
+    "hapi-mysql": "0.0.42",
+    "joi": "~2.7.0",
+    "lodash": "^2.4.1",
+    "manta": "~1.2.6",
+    "manta-client": "~1.0.5",
+    "moment": "~2.5.1",
+    "mysql": "~2.0.1",
+    "uuid": "~1.4.1"
+  },
+  "devDependencies": {
+    "code": "^1.2.1",
+    "lab": "^5.1.1",
+    "request": "^2.51.0"
   }
 }
