@@ -174,8 +174,8 @@ lab.experiment('Downloads Controller', function () {
           url: url + '/downloads/point/last-day/express,npm',
           json: true
         }, function(err, res, body) {
-          Code.expect(body[0]).to.deep.equal(expressLastDay);
-          Code.expect(body[1]).to.deep.equal(npmLastDay);
+          Code.expect(body.express).to.deep.equal(expressLastDay);
+          Code.expect(body.npm).to.deep.equal(npmLastDay);
           return done();
         });
       });
@@ -185,13 +185,13 @@ lab.experiment('Downloads Controller', function () {
           url: url + '/downloads/point/2014-02-06:2014-03-07/express,npm',
           json: true
         }, function(err, res, body) {
-          Code.expect(body[0].package).to.equal('express');
-          Code.expect(body[0].downloads).to.be.greaterThan(5000);
-          Code.expect(body[0].start).to.match(dateFormat);
-          Code.expect(body[0].end).to.match(dateFormat);
+          Code.expect(body.express.package).to.equal('express');
+          Code.expect(body.express.downloads).to.be.greaterThan(5000);
+          Code.expect(body.express.start).to.match(dateFormat);
+          Code.expect(body.express.end).to.match(dateFormat);
 
-          Code.expect(body[1].package).to.equal('npm');
-          Code.expect(body[1].downloads).to.be.greaterThan(5000);
+          Code.expect(body.npm.package).to.equal('npm');
+          Code.expect(body.npm.downloads).to.be.greaterThan(5000);
           return done();
         });
       });
@@ -254,6 +254,7 @@ lab.experiment('Downloads Controller', function () {
           Code.expect(body.package).to.equal('express');
           Code.expect(body.downloads.length).to.equal(7);
           Code.expect(body.downloads[0].downloads).to.be.greaterThan(10000);
+          Code.expect(body.downloads[0].day < body.downloads[6].day).to.equal(true);
           Code.expect(body.start).to.match(dateFormat);
           Code.expect(body.end).to.match(dateFormat);
           return done();
@@ -311,8 +312,9 @@ lab.experiment('Downloads Controller', function () {
           url: url + '/downloads/range/last-week/express,npm',
           json: true
         }, function(err, res, body) {
-          Code.expect(body[0]).to.deep.equal(expressLastWeek);
-          Code.expect(body[1]).to.deep.equal(npmLastWeek);
+          Code.expect(body.npm.downloads[0].day < body.npm.downloads[6].day).to.equal(true);
+          Code.expect(body.express).to.deep.equal(expressLastWeek);
+          Code.expect(body.npm).to.deep.equal(npmLastWeek);
           return done();
         });
       });

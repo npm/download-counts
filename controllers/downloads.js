@@ -111,7 +111,10 @@ var getSumOfDays = function(request,reply,conditions,period) {
               outputs.push(output)
             })
 
-            reply(bulk ? outputs : outputs[0])
+            if (bulk) outputs = _.indexBy(outputs, 'package');
+            else outputs = outputs[0];
+
+            reply(outputs)
           }
         }
 
@@ -173,6 +176,8 @@ var getRangeOfDays = function(request,reply,conditions,period) {
           } else if (bulk) {
             handleBulkRange(rows, period, reply)
           } else {
+            rows = sortByDay(rows);
+
             var dayCounts = rows.map(function(row) {
               return {
                 day: moment(row.day).format('YYYY-MM-DD'),
@@ -204,6 +209,8 @@ var handleBulkRange = function(rows, period, reply) {
     outputs = []
 
   Object.keys(grouped).forEach(function(key) {
+    grouped[key] = sortByDay(grouped[key]);
+
     var dayCounts = _.map(grouped[key], function(r) {
       return {
         day: moment(r.day).format('YYYY-MM-DD'),
@@ -220,8 +227,12 @@ var handleBulkRange = function(rows, period, reply) {
 
     outputs.push(output)
   })
-  
-  reply(outputs);
+
+  reply(_.indexBy(outputs, 'package'));
+}
+
+var sortByDay = function (rows) {
+  return rows.sort(function(a, b) {return a.day.getTime() - b.day.getTime()});
 }
 
 /**
