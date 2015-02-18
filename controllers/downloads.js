@@ -63,7 +63,7 @@ var parsePeriod = function(periodString) {
  */
 var getSumOfDays = function(request,reply,conditions,period) {
 
-  var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day >= ? and day <= ?'
+  var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime)'
   var bindValues = []
   var qmarks = []
   var bulk = false
@@ -150,10 +150,10 @@ var getRangeOfDays = function(request,reply,conditions,period) {
       bindValues.push(package)
     })
 
-    sql += 'SELECT package, day, downloads FROM downloads WHERE day >= ? and day <= ? AND package in (' + qmarks.join(',') + ') GROUP BY package,day'
+    sql += 'SELECT package, day, downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime) AND package in (' + qmarks.join(',') + ') GROUP BY package,day'
   } else {
     // if all packages, group by day
-    sql += 'SELECT day, SUM(downloads) as downloads FROM downloads WHERE day >= ? and day <= ? GROUP BY day'
+    sql += 'SELECT day, SUM(downloads) as downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime) GROUP BY day'
   }
   sql += ' ORDER BY day'
 

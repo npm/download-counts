@@ -42,4 +42,6 @@ server.route({
 });
 
 // Start the server
-server.start();
+server.start(function() {
+  console.log("Downloads API running on port " + server._port)
+});
