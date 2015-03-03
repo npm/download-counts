@@ -1,11 +1,11 @@
 {
-  "name": "downloads",
+  "name": "@npm/downloads",
   "version": "1.0.0",
-  "description": "npm Download counts for fun and profit",
+  "description": "npm download counts for fun and profit",
   "main": "index.js",
   "scripts": {
-    "start": "node ./index.js",
-    "test": "./node_modules/.bin/lab -v -c --timeout 5000"
+    "start": "node index.js",
+    "test": "lab -v -c --timeout 5000"
   },
   "author": "Laurie Voss <laurie@npmjs.com>",
   "license": "ISC",
