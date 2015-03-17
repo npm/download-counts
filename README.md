@@ -155,10 +155,10 @@ You can ssh into the VM to play with MySQL or whatever:
 
 <code>vagrant ssh</code>
 
-### Importing data from Manta (npm, Inc. only)
+### Importing data from S3 (npm, Inc. only)
 
-New data is generated daily on npm's manta account. You can
-get it by running
+New data is generated daily and stored in S3. You can get it with the 
+backfill script like so:
 
 <code>node scripts/backfill.js YYYY-MM-DD N</code>
 
