@@ -172,5 +172,13 @@ April 1, for instance, run
 
 <code>node scripts/backfill.js 2014-04-01</code>
 
-NB: you must have your MANTA_KEY_ID, MANTA_USER and MANTA_URL
-local variables defined (e.g. in .bash_profile) to connect to manta.
+For the AWS JS SDK to work, you must have a `~/.aws/credentials` file 
+containing
+
+```
+aws_access_key_id = XXXXX
+aws_secret_access_key = YYYYY
+```
+
+Where X and Y are your AWS access credentials. The production server has
+its own credentials specifically for this purpose.
