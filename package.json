@@ -1,5 +1,5 @@
 {
-  "name": "@npm/downloads",
+  "name": "@npminc/downloads",
   "version": "1.0.0",
   "description": "npm download counts for fun and profit",
   "main": "index.js",
