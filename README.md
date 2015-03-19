@@ -2,6 +2,15 @@
 
 Gives you download counts. Eventually, maybe other stuff.
 
+## Data source
+
+npm's raw log data is continuously written to a series of buckets on AWS S3. Once per day, soon 
+after UTC midnight, a map-reduce cluster is spun up that crunches the previous day's logs and
+pushes them into the database. Because this is UTC this creates some slightly unintuitive results,
+e.g. if you are on the west coast on the 19th of September, the data for the 19th of September will
+become available at 5pm (because UTC already moved to the 20th) during the winter, but not until 6pm
+during the summer, because the US observes daylight savings but UTC is fixed.
+
 ## Point values
 
 Gets the total downloads for a given period, for all packages or a specific package.
