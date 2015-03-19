@@ -1,15 +1,13 @@
 var mysql = require('mysql')
 var Config = require('../config')
-var manta = require('manta-client')
 var assert = require('assert')
 var moment = require('moment')
 var async = require('async')
+var _ = require('lodash')
 var CompactUuid = require('compact-uuid')
 
-var client = manta();
-assert.ok(client)
-
-console.log('manta ready: %s', client.toString());
+var AWS = require('aws-sdk')
+var s3 = new AWS.S3();
 
 var dbConfig = Config.writeDb
 dbConfig['connectionLimit'] = 1 // to avoid deadlocks on inserts
@@ -79,65 +77,75 @@ var insertBatch = function(day,counts,cb) {
 
 }
 
-// get a day's downloads from manta
-var loadDay = function(day,cb) {
+// get a day's downloads from S3
+// a "day" consists of several dozen keys, each containing a chunk of that day's data
+// they must be combined into an array of {package: name, downloads: count} objects
+var loadDay = function(dayKeys,cb) {
 
-  client.get(Config.manta.statsDir + day, function (err, stream) {
+  var packageDownloads = []
+  var day;
 
-    assert.ifError(err);
+  async.eachLimit(dayKeys,Config.backfill.parallel,
+    function(key,cb) {
 
-    var dayDownloads = ''
-
-    stream.setEncoding('utf8');
-    stream.on('data', function (chunk) {
-      dayDownloads += chunk
-    });
-    stream.on('end',function() {
-      var lines = dayDownloads.split("\n")
-
-      // package counts can appear multiple times in the same day
-      // sum them up
-      var dedupe = Object.create(null) // because {} has a key called "constructor" and there's a package called that
-      lines.forEach(function(line,index) {
-        var lineParts = line.trim().split(' ')
-        var package = lineParts[0].toLowerCase()
-        var downloads = parseInt(lineParts[1])
-        if (!package || !downloads) {
-          // ignore blank lines or null downloads
-          return;
-        }
-        if (dedupe[package]) dedupe[package] += downloads
-        else dedupe[package] = downloads
-      })
-
-      // convert the object into an array
-      var counts = []
-      for(var p in dedupe) {
-        counts.push({package:p, downloads: dedupe[p]})
+      // what day is this? the next step needs the string.
+      if (!day) {
+        day = key.substring(0,10)
       }
 
-      console.log(day + ": " + lines.length + " rows yielding " + counts.length + " unique packages")
-      //console.log(counts)
+      var params = {
+        Bucket: Config.backfill.bucket,
+        Key: Config.backfill.prefix + key
+      };
+      s3.getObject(params, function(err, data) {
+        if (err) {
+          console.log(err, err.stack)
+          cb(err)
+        } else {
+          var packageLines = data.Body.toString('utf-8').split("\n")
+          async.each(
+            packageLines,
+            function(line,cb) {
+              var packageLine = line.trim().split(" ")
+              var package = packageLine[0]
 
-      insertBatch(day,counts,cb)
-    })
-  });
+              // ignore empty package names
+              if(!package || package == "") {
+                cb()
+                return
+              }
+
+              // do not import mixed-case packages; mySQL doesn't know what to do with them
+              if (package != package.toLowerCase()) {
+                cb()
+                return
+              }
+
+              var count = packageLine[1]
+              packageDownloads.push({
+                package: package,
+                downloads: count
+              })
+              cb() // this line is pushed
+            },
+            function(err) {
+              cb() // all lines in this chunk are pushed
+            }
+          )
+        }
+      });
+
+    },
+    function(err) {
+      // this day is complete. Import it into mySQL.
+      insertBatch(day,packageDownloads,cb)
+    }
+  )
 
 }
 
-// find all the days we have to load
+// start importing days, in parallel
 var loadAllDays = function(days) {
-  // filter by start day
-  var startDay = moment(Config.backfill.startDate).format('YYYY-MM-DD')
-
-  var startDayIndex = days.indexOf(startDay)
-  if ( startDayIndex > -1 ) {
-    days = days.slice(startDayIndex)
-    console.log("Start day was in range")
-  } else {
-    console.log("Start date was out of range")
-    process.exit(1)
-  }
 
   // limit the number we do at once
   var limit = Config.backfill.limit || Config.backfill.defaultLimit
@@ -147,37 +155,93 @@ var loadAllDays = function(days) {
   async.eachLimit(days,Config.backfill.parallel,loadDay,function(err) {
     assert.ifError(err)
     pool.end()
-    client.close()
-    console.log('done')
+    console.log("all days imported")
   })
 
 }
 
-// find all the days available to load in manta
-var getAvailableDays = function(cb) {
+// starting at our start date, get the paths of the days we want to import
+// days can get re-calculated, so always pick the most recent re-run
+var getAvailableDays = function(callback) {
 
-  var days = []
+  var startDay = moment(Config.backfill.startDate).format('YYYY-MM-DD')
 
-  client.ls(Config.manta.statsDir, function (err, res) {
-
-    assert.ifError(err);
-
-    res.on('object',function(obj) {
-      days.push(obj.name)
-    })
-
-    res.once('error', function (err) {
-      console.error(err.stack);
-      process.exit(1);
-    });
-
-    res.once('end',function() {
-      days.sort()
-      console.log('got ' + days.length + ' available days')
-      cb(days)
-    })
-
+  // find the first key from the first day
+  var params = {
+    Bucket: Config.backfill.bucket,
+    MaxKeys: Config.backfill.maxDays,
+    Prefix: Config.backfill.prefix + startDay
+  }
+  console.log("fetch all with prefix " + params.Prefix)
+  s3.listObjects(params, function(err, data) {
+    if (err) {
+      console.log(err, err.stack)
+      return
+    } else {
+      if(data.Contents.length > 0) {
+        var firstKey = data.Contents[0].Key
+        fetchAllAfterKey(firstKey)
+      } else {
+        console.log("No data found for " + startDay)
+        return
+      }
+    }
   })
+
+  // find all keys from that day or afterwards
+  function fetchAllAfterKey(key) {
+    var params = {
+      Bucket: Config.backfill.bucket,
+      MaxKeys: Config.backfill.maxDays,
+      Marker: key
+    }
+    console.log("fetch all after key " + key)
+    s3.listObjects(params, function(err, data) {
+      if (err) {
+        console.log(err, err.stack)
+        return
+      } else {
+        splitKeysByDay(data.Contents.map(function(o) {
+          return o.Key.substr(Config.backfill.prefix.length)
+        }))
+      }
+    })
+
+  }
+
+  // split the keys into days, and each day into runs within that day
+  function splitKeysByDay(keys) {
+    var allDays = {}
+    async.each(
+      keys,
+      function(key,cb) {
+        var day = key.substr(0,10)
+        var ts = key.substr(11).split("/")[0]
+        if(!allDays[day]) allDays[day] = []
+        if(!allDays[day][ts]) allDays[day][ts] = []
+        if(key.indexOf('_SUCCESS') < 0) { // skip the "success" key
+          allDays[day][ts].push(key)
+        }
+        cb()
+      },
+      function(er) {
+        getBestDays(allDays)
+      }
+    )
+  }
+
+  // the "best" run for each day is the one with the highest timestamp
+  function getBestDays(days) {
+
+    var bestDays = _.map(
+      days,
+      function(day) {
+        var highestTs = Math.max.apply(null,Object.keys(day))
+        return day[highestTs]
+      }
+    )
+    callback(bestDays)
+  }
 
 }
 

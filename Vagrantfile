@@ -32,7 +32,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Your box will be available to your local machine at this address
   # nobody else will be able to see it
-  config.vm.network :private_network, ip: "192.168.33.10"
+  #config.vm.network :private_network, ip: "192.168.33.10"
 
   # Create a public network, which generally matches to bridged network.
   # If this is turned on your vagrant box will get a local IP
@@ -40,8 +40,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # it will NOT be the 192.* address above
   # config.vm.network :public_network
 
-  # uncomment to forward ports. You probably don't want this.
-  # config.vm.network :forwarded_port, guest: 80, host: 8080
+  # uncomment to forward ports.
+  config.vm.network :forwarded_port, guest: 3306, host: 3306
+  config.vm.network :forwarded_port, guest: 5000, host: 5000
 
   # Forward your ssh keys to the box (lets git work inside)
   config.ssh.forward_agent = true
@@ -50,7 +51,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "../.", "/vagrant_npm"
 
   # this runs the provisioning script defined above
   config.vm.provision "shell", inline: $script

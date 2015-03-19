@@ -2,6 +2,15 @@
 
 Gives you download counts. Eventually, maybe other stuff.
 
+## Data source
+
+npm's raw log data is continuously written to a series of buckets on AWS S3. Once per day, soon 
+after UTC midnight, a map-reduce cluster is spun up that crunches the previous day's logs and
+pushes them into the database. Because this is UTC this creates some slightly unintuitive results,
+e.g. if you are on the west coast on the 19th of September, the data for the 19th of September will
+become available at 5pm (because UTC already moved to the 20th) during the winter, but not until 6pm
+during the summer, because the US observes daylight savings but UTC is fixed.
+
 ## Point values
 
 Gets the total downloads for a given period, for all packages or a specific package.
@@ -155,10 +164,10 @@ You can ssh into the VM to play with MySQL or whatever:
 
 <code>vagrant ssh</code>
 
-### Importing data from Manta (npm, Inc. only)
+### Importing data from S3 (npm, Inc. only)
 
-New data is generated daily on npm's manta account. You can
-get it by running
+New data is generated daily and stored in S3. You can get it with the 
+backfill script like so:
 
 <code>node scripts/backfill.js YYYY-MM-DD N</code>
 
@@ -172,5 +181,13 @@ April 1, for instance, run
 
 <code>node scripts/backfill.js 2014-04-01</code>
 
-NB: you must have your MANTA_KEY_ID, MANTA_USER and MANTA_URL
-local variables defined (e.g. in .bash_profile) to connect to manta.
+For the AWS JS SDK to work, you must have a `~/.aws/credentials` file 
+containing
+
+```
+aws_access_key_id = XXXXX
+aws_secret_access_key = YYYYY
+```
+
+Where X and Y are your AWS access credentials. The production server has
+its own credentials specifically for this purpose.

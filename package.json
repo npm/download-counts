@@ -1,5 +1,5 @@
 {
-  "name": "@npm/downloads",
+  "name": "@npminc/downloads",
   "version": "1.0.0",
   "description": "npm download counts for fun and profit",
   "main": "index.js",
@@ -12,6 +12,7 @@
   "dependencies": {
     "assert": "~1.1.1",
     "async": "~0.2.10",
+    "aws-sdk": "^2.1.17",
     "compact-uuid": "~0.0.1",
     "dashdash": "~1.4.0",
     "hapi": "~2.3.0",
