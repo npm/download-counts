@@ -1,6 +1,6 @@
 {
   "downloads1": {
-    "module": "downloads",
+    "module": "@npm/downloads",
     "description": "npm Download counts for fun and profit",
     "scripts": {
       "start": "node ./index.js"
@@ -11,7 +11,7 @@
     "args": {}
   },
   "downloads2": {
-    "module": "downloads",
+    "module": "@npm/downloads",
     "description": "npm Download counts for fun and profit",
     "scripts": {
       "start": "node ./index.js"
@@ -22,7 +22,7 @@
     "args": {}
   },
   "downloads3": {
-    "module": "downloads",
+    "module": "@npm/downloads",
     "description": "npm Download counts for fun and profit",
     "scripts": {
       "start": "node ./index.js"
@@ -33,7 +33,7 @@
     "args": {}
   },
   "downloads4": {
-    "module": "downloads",
+    "module": "@npm/downloads",
     "description": "npm Download counts for fun and profit",
     "scripts": {
       "start": "node ./index.js"
