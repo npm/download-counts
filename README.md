@@ -2,6 +2,8 @@
 
 Gives you download counts. Eventually, maybe other stuff.
 
+Our blog has an explanation of [how npm download counts work](http://blog.npmjs.org/post/92574016600/numeric-precision-matters-how-npm-download-counts), including "what counts as a download?"
+
 ## Data source
 
 npm's raw log data is continuously written to a series of buckets on AWS S3. Once per day, soon 
