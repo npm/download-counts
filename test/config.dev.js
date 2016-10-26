@@ -38,4 +38,3 @@ exports.backfill = {
   defaultLimit: 1000,
   limit: process.argv[3]
 }
-

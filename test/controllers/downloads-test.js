@@ -2,7 +2,7 @@ var Code = require('code'),
   Lab = require('lab'),
   lab = exports.lab = Lab.script(),
   helper = require('../test-helper'),
-  port = 5000,
+  port = 9999,
   url = 'http://127.0.0.1:' + port,
   request = require('request'),
   dateFormat = /[0-9]{4}-[0-9]{2}-[0-9]{2}/;
@@ -17,10 +17,11 @@ lab.experiment('Downloads Controller', function () {
     helper.stopServer(done);
   });
 
+  var expressLastDay = null;
+
   lab.experiment('point values', function() {
 
-    var expressLastDay = null,
-      npmLastDay = null;
+    var npmLastDay = null;
 
     lab.before(function(done) {
       request.get({

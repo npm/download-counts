@@ -10,6 +10,14 @@ CREATE TABLE `downloads` (
   KEY `day` (`day`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- create daily download counts totals table.
+CREATE TABLE `total_daily_downloads` (
+  `day` datetime NOT NULL,
+  `downloads` int(10) unsigned NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`day`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- this will just create an empty totals table
 create table download_totals as
   select

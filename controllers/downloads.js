@@ -63,7 +63,11 @@ var parsePeriod = function(periodString) {
  */
 var getSumOfDays = function(request,reply,conditions,period) {
 
-  var sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime)'
+  var sql = null
+  if (conditions.package)
+    sql = 'SELECT package, sum(downloads) as downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime)'
+  else
+    sql = 'SELECT sum(downloads) as downloads FROM total_daily_downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime)'
   var bindValues = []
   var qmarks = []
   var bulk = false
@@ -153,7 +157,7 @@ var getRangeOfDays = function(request,reply,conditions,period) {
     sql += 'SELECT package, day, downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime) AND package in (' + qmarks.join(',') + ') GROUP BY package,day'
   } else {
     // if all packages, group by day
-    sql += 'SELECT day, SUM(downloads) as downloads FROM downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime) GROUP BY day'
+    sql += 'SELECT day, SUM(downloads) as downloads FROM total_daily_downloads WHERE day BETWEEN cast(? as datetime) and cast(? as datetime) GROUP BY day'
   }
   sql += ' ORDER BY day'
 
@@ -250,7 +254,7 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
 
     // we need the current max day
     connection.query(
-      'SELECT max(day) as last_day FROM downloads',
+      'SELECT max(day) as last_day FROM total_daily_downloads',
       function(er,rows) {
 
         if(er) {
