@@ -1,5 +1,6 @@
 var mysql = require('mysql')
 var Config = require('../config')
+var fastly = require('fastly')(Config.fastly.key)
 var assert = require('assert')
 var moment = require('moment')
 var async = require('async')
@@ -56,13 +57,16 @@ var insertBatch = function(day,counts,cb) {
         var runQuery = function() {
           connection.query(sql, function(err, result) {
             assert.ifError(err)
-            console.log(result)
+            console.info('finished populating package download counts', result)
             populateDailyTotal(connection, day, function (err) {
               if (err) console.error(err)
               // we've finished populating stats for all packages,
               // along with the daily rollup.
-              connection.release()
-              cb()
+              fastly.purgeAll(Config.fastly.service, function (err, res) {
+                console.info('purged download counts in fastly', res)
+                connection.release()
+                return cb()
+              })
             })
           })
         }
