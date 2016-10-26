@@ -5,6 +5,7 @@ var moment = require('moment')
 var async = require('async')
 var _ = require('lodash')
 var CompactUuid = require('compact-uuid')
+var populateDailyTotal = require('../lib/populate-daily-total')
 
 var AWS = require('aws-sdk')
 var s3 = new AWS.S3();
@@ -56,10 +57,14 @@ var insertBatch = function(day,counts,cb) {
           connection.query(sql, function(err, result) {
             assert.ifError(err)
             console.log(result)
-            // And done with the connection.
-            connection.release();
-            cb()
-          });
+            populateDailyTotal(connection, day, function (err) {
+              if (err) console.error(err)
+              // we've finished populating stats for all packages,
+              // along with the daily rollup.
+              connection.release()
+              cb()
+            })
+          })
         }
 
         var tries = 0;

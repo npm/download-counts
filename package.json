@@ -4,6 +4,7 @@
   "description": "npm download counts for fun and profit",
   "main": "index.js",
   "scripts": {
+    "pretest": "./scripts/backfill-daily-totals.js",
     "start": "node index.js",
     "test": "lab -v -c --timeout 5000"
   },
