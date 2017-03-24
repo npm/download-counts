@@ -84,7 +84,7 @@ var getSumOfDays = function(request,reply,conditions,period) {
     sql += ' AND package in (' + qmarks.join(',') + ') GROUP BY package'
   }
 
-  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+  getConnection(request,reply,function(connection) {
 
     // Use the connection
     connection.query(
@@ -161,7 +161,7 @@ var getRangeOfDays = function(request,reply,conditions,period) {
   }
   sql += ' ORDER BY day'
 
-  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+  getConnection(request,reply,function(connection) {
 
     // Use the connection
     connection.query(
@@ -250,7 +250,7 @@ var sortByDay = function (rows) {
  */
 var getDaysFromRange = function(request,reply,conditions,period,cb) {
 
-  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+  getConnection(request,reply,function(err,connection) {
 
     // we need the current max day
     connection.query(
@@ -425,4 +425,29 @@ exports.range = function(request, reply) {
     getRangeOfDays(request,reply,conditions,period)
   }
 
+}
+
+function getConnection(request,reply,cb) {
+
+  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+
+    if(err) {
+      reply({
+        error: "Connection to database failed: " + err.code
+      })
+
+      return
+    }
+
+    if(!connection) {
+      reply({
+        error: "Cannot connect to database"
+      })
+
+      return
+    }
+
+    cb(connection)
+
+  })
 }
