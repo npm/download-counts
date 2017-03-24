@@ -18,13 +18,13 @@
     "dashdash": "~1.4.0",
     "fastly": "^1.2.1",
     "hapi": "~2.3.0",
-    "hapi-mysql": "~0.0.41",
+    "hapi-mysql": "^1.0.15",
     "joi": "~2.7.0",
     "lodash": "^2.4.1",
     "manta": "~1.2.6",
     "manta-client": "~1.0.5",
     "moment": "~2.5.1",
-    "mysql": "~2.0.1",
+    "mysql": "^2.13.0",
     "uuid": "~1.4.1"
   },
   "devDependencies": {

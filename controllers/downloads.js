@@ -250,7 +250,7 @@ var sortByDay = function (rows) {
  */
 var getDaysFromRange = function(request,reply,conditions,period,cb) {
 
-  getConnection(request,reply,function(err,connection) {
+  getConnection(request,reply,function(connection) {
 
     // we need the current max day
     connection.query(
@@ -258,6 +258,8 @@ var getDaysFromRange = function(request,reply,conditions,period,cb) {
       function(er,rows) {
 
         if(er) {
+          console.log(er)
+
           reply({
             error: "query failed (0003)"
           })
@@ -313,7 +315,7 @@ var getAllTimeData = function(request,reply,conditions) {
   var sql = "SELECT package, total_downloads FROM download_totals WHERE package = ?"
   var bindValues = [conditions.package]
 
-  request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
+  getConnection(request,reply,function(connection) {
 
     // Use the connection
     connection.query(
@@ -429,6 +431,25 @@ exports.range = function(request, reply) {
 
 function getConnection(request,reply,cb) {
 
+  /* this works
+  var options = {
+    host     : '192.168.33.10',
+    user     : 'test',
+    password : 'test',
+    database : 'stats'
+  }
+
+  var pool = mysql.createPool(options);
+
+  pool.getConnection(function(err,connection) {
+
+    connection.connect();
+
+    cb(connection)
+
+  })
+  */
+
   request.server.plugins['hapi-mysql'].pool.getConnection(function(err, connection) {
 
     if(err) {
@@ -450,4 +471,5 @@ function getConnection(request,reply,cb) {
     cb(connection)
 
   })
+
 }
