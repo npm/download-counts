@@ -1,5 +1,7 @@
 # npm stats microservice
 
+__Note!__ This code base isn't what npm uses to serve download counts anymore, and its documentation is likely to drift out of correctness as time passes. See [the registry API documentation](https://github.com/npm/registry/blob/master/docs/download-counts.md) for up-to-date usage info.
+
 Gives you download counts. Eventually, maybe other stuff.
 
 Our blog has an explanation of [how npm download counts work](http://blog.npmjs.org/post/92574016600/numeric-precision-matters-how-npm-download-counts), including "what counts as a download?"
