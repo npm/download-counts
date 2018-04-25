@@ -104,8 +104,9 @@ var getSumOfDays = function(request,reply,conditions,period) {
             var outputs = []
 
             rows.forEach(function(result) {
+              var downloadCount = result.downloads || 0;
               var output = {
-                downloads: result.downloads,
+                downloads: downloadCount,
                 start: period.start,
                 end: period.end
               }
@@ -188,8 +189,9 @@ var getRangeOfDays = function(request,reply,conditions,period) {
                 downloads: row.downloads
               }
             })
+            var downloadCount = dayCounts || 0;
             var output = {
-              downloads: dayCounts,
+              downloads: downloadCount,
               start: period.start,
               end: period.end
             }
@@ -222,8 +224,9 @@ var handleBulkRange = function(rows, period, reply) {
       }
     });
 
+    var downloadCount = dayCounts || 0;
     var output = {
-      downloads: dayCounts,
+      downloads: downloadCount,
       start: period.start,
       end: period.end,
       package: key
@@ -332,9 +335,10 @@ var getAllTimeData = function(request,reply,conditions) {
             })
           } else {
             var result = rows[0]
+            var downloadCount = result['total_downloads'] || 0;
             var output = {
               package: result.package,
-              downloads: result['total_downloads']
+              downloads: downloadCount
               // TODO: could return start and end days here?
               //start: period.start,
               //end: period.end
