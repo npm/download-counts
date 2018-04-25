@@ -104,6 +104,7 @@ var getSumOfDays = function(request,reply,conditions,period) {
             var outputs = []
 
             rows.forEach(function(result) {
+              var dowloadCount = result.downloads || 0;
               var output = {
                 downloads: result.downloads,
                 start: period.start,
@@ -188,6 +189,7 @@ var getRangeOfDays = function(request,reply,conditions,period) {
                 downloads: row.downloads
               }
             })
+            var downloadCount = dayCounts || 0;
             var output = {
               downloads: dayCounts,
               start: period.start,
@@ -222,6 +224,7 @@ var handleBulkRange = function(rows, period, reply) {
       }
     });
 
+    var downloadCounts = dayCounts || 0;
     var output = {
       downloads: dayCounts,
       start: period.start,
@@ -332,6 +335,7 @@ var getAllTimeData = function(request,reply,conditions) {
             })
           } else {
             var result = rows[0]
+            var downloadCount = result['total_downloads'] || 0;
             var output = {
               package: result.package,
               downloads: result['total_downloads']
