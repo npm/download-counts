@@ -24,7 +24,7 @@
     "manta": "~1.2.6",
     "manta-client": "~1.0.5",
     "moment": "~2.5.1",
-    "mysql": "~2.0.1",
+    "mysql": "~2.18.1",
     "uuid": "~1.4.1"
   },
   "devDependencies": {
